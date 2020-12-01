@@ -12,7 +12,7 @@
 11.26 增加结束命令
 11.27 调整通知为，成功开启宝箱再通知
 11.28 修复错误
-11.29 更新 支持action
+11.29 更新 支持action.默认每天21点到21点20通知
 
 ⚠️cookie获取方法：
 
@@ -29,26 +29,26 @@ hostname=mqqapi.reader.qq.com
 ############## 圈x
 
 #企鹅读书获取cookie
-https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init url script-request-header https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js
+https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init url script-request-header https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js
 
 #企鹅读书获取时长cookie
-https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid? url script-request-header https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js
+https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid? url script-request-header https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js
 
 ############## loon
 
 //企鹅读书获取cookie
-http-request https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js,requires-header=true, tag=企鹅读书获取cookie 
+http-request https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js,requires-header=true, tag=企鹅读书获取cookie 
 
 //企鹅读书获取时长cookie
-http-request https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid? script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js, requires-header=true, tag=企鹅读书获取时长cookie
+http-request https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid? script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js, requires-header=true, tag=企鹅读书获取时长cookie
 
 ############## surge
 
 //企鹅读书获取cookie
-企鹅读书 = type=http-request,pattern=https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js, requires-header=true
+企鹅读书 = type=http-request,pattern=https:\/\/mqqapi\.reader\.qq\.com\/mqq\/user\/init,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js, requires-header=true
 
 //企鹅读书获取时长cookie
-企鹅读书 = type=http-request,pattern=https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid?,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/qqread.js, requires-header=true
+企鹅读书 = type=http-request,pattern=https:\/\/mqqapi\.reader\.qq\.com\/mqq\/addReadTimeWithBid?,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/master/Task/qqreads.js, requires-header=true
 
 
 */
@@ -57,6 +57,7 @@ const jsname='企鹅读书'
 const $ = Env(jsname)
 const notify = $.isNode() ? require('./sendNotify') : '';
 var tz=''
+var kz=''
 
 const logs = 0;   //0为关闭日志，1为开启
 const notifyInterval=2
@@ -74,8 +75,8 @@ let qqreadhdArr = [], qqreadheaderVal = '',
     qqreadHD = [], qqreadtimeURL = [], 
     qqreadtimeHD = [];    
   if ($.isNode()) {
-  if (process.env.QQREAD_HEADER && process.env.QQREAD_HEADER.indexOf('#') > -1) {
-  qqreadHD = process.env.QQREAD_HEADER.split('#');
+  if (process.env.QQREAD_HEADER && process.env.QQREAD_HEADER.indexOf('\n') > -1) {
+  qqreadHD = process.env.QQREAD_HEADER.split('\n');
   } else {
       qqreadHD = process.env.QQREAD_HEADER.split()
   };
@@ -86,8 +87,8 @@ let qqreadhdArr = [], qqreadheaderVal = '',
       qqreadtimeURL = process.env.QQREAD_TIMEURL.split()
   };
   
-  if (process.env.QQREAD_TIMEHD && process.env.QQREAD_TIMEHD.indexOf('#') > -1) {
-  qqreadtimeHD = process.env.QQREAD_TIMEHD.split('#');
+  if (process.env.QQREAD_TIMEHD && process.env.QQREAD_TIMEHD.indexOf('\n') > -1) {
+  qqreadtimeHD = process.env.QQREAD_TIMEHD.split('\n');
   } else {
       qqreadtimeHD = process.env.QQREAD_TIMEHD.split()
   }; 
@@ -152,7 +153,7 @@ function all(){
       qqreadheaderVal = qqreadhdArr[K];
       qqreadtimeurlVal = qqreadtimeurlArr[K];
       qqreadtimeheaderVal = qqreadtimehdArr[K];
-   for(var i=0;i<18;i++)
+   for(var i=0;i<17;i++)
  { (function(i) {
             setTimeout(function() {
 
@@ -203,16 +204,13 @@ qqreadwktime();//周时长查询
 
 else if (i==15)
 qqreadpick();//领周时长奖励
-
-else if (i == 16) 
-showmsg();//通知
 		 
-else if (i == 17 && K < qqreadhdArr.length - 1) {
+else if (i == 16 && K < qqreadhdArr.length - 1) {
 K += 1;
 all();
- } else if (i == 17 && K == qqreadhdArr.length - 1) {
-	 console.log(tz)
-if ($.isNode())notify.sendNotify(jsname,tz)  
+ } else if (i == 16 && K == qqreadhdArr.length - 1) {
+	 showmsg();//通知
+	 console.log(tz)  
             $.done();
           }
         },
@@ -235,16 +233,24 @@ return new Promise((resolve, reject) => {
    $.get(toqqreadtaskurl,(error, response, data) =>{
      if(logs) $.log(`${jsname}, 任务列表: ${data}`)
      task =JSON.parse(data)
+	   kz+=
+    '【现金余额】:'+
+    (task.data.user.amount/10000).toFixed(2)+
+	'元\n'+
+    '【已开宝箱】:'+
+    task.data.treasureBox.count+
+	'个\n'
+    
 tz+=
-    '【任务列表】:余额'+
-    task.data.user.amount+
-	'金币\n'+
+    '【现金余额】:'+
+    (task.data.user.amount/10000).toFixed(2)+
+	'元\n'+
     '【第'+
 	task.data.invite.issue+
 	'期】:时间'+
     task.data.invite.dayRange+
 	'\n'+
-    '已邀请'+
+    ' 已邀请'+
 	task.data.invite.inviteCount+
     '人，再邀请'+
 	task.data.invite.nextInviteConfig.count+
@@ -312,9 +318,10 @@ return new Promise((resolve, reject) => {
    $.get(toqqreadinfourl,(error, response, data) =>{
      if(logs) $.log(`${jsname}, 用户名: ${data}`)
      info =JSON.parse(data)
-
+kz+=
+'\n========== 【'+info.data.user.nickName+'】 ==========\n'
 tz+=
-'【用户信息】:'+info.data.user.nickName+'\n'
+'\n========== 【'+info.data.user.nickName+'】 ==========\n'
 
 resolve()
     })
@@ -632,7 +639,12 @@ tz+='【周时长奖励'+(i+1)+'】:领取'+Packageid[i]+'阅豆\n'
 
 
 function showmsg() {      
-tz += `\n\n========= 脚本执行时间(TM)：${new Date(new Date().getTime() + 0 * 60 * 60 * 1000).toLocaleString('zh', {hour12: false})} \n\n`;
+tz += `\n\n========= 脚本执行-北京时间(UTC+8)：${new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toLocaleString()} \n\n`;
+	
+let d = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+if (d.getHours()==21 && d.getMinutes()<=20 ) {
+         notify.sendNotify(jsname,kz)
+ }
 	
 if (notifyInterval==1)
 $.msg(jsname,'',tz)//显示所有通知
